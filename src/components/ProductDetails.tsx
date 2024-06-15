@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Container, Typography, Grid, Button, Card, CardMedia, Box, IconButton } from '@mui/material';
-import { Add, Remove, ExpandMore } from '@mui/icons-material';
+import { Add, Remove, ExpandMore, Close } from '@mui/icons-material';
 import CartPopup from '@/components/CartPopup';
 import { useRouter } from 'next/router';
 
@@ -13,6 +13,10 @@ interface Product {
     price: number;
     description: string;
     ingredients: string;
+    category: string;
+    images: string[];
+    productstatus: string;
+    inventoryQuantity: number;
 }
 
 const ProductDetailsPage: React.FC = () => {
@@ -21,7 +25,7 @@ const ProductDetailsPage: React.FC = () => {
     const [quantity, setQuantity] = useState(1);
     const [showIngredients, setShowIngredients] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
-   
+
     const router = useRouter();
     const { id } = router.query;
 
@@ -98,9 +102,21 @@ const ProductDetailsPage: React.FC = () => {
         setCartOpen(true);
     };
 
+    const handleClose = () => {
+        router.push(`/categoryProducts?category=${product.category}`); 
+    };
+
     return (
         <>
             <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
+                <Box sx={{ position: 'relative' }}>
+                    <IconButton
+                        onClick={handleClose}
+                        sx={{ position: 'absolute', top: 0, right: 0 ,  color: '#8B4513'}}
+                    >
+                        <Close />
+                    </IconButton>
+                </Box>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                         <Card>
@@ -111,6 +127,21 @@ const ProductDetailsPage: React.FC = () => {
                                 alt={product.name}
                             />
                         </Card>
+
+                        <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                            {product.images.map((image, index) => (
+                                <Grid item xs={3} key={index}>
+                                    <Card>
+                                        <CardMedia
+                                            component="img"
+                                            height="100"
+                                            image={image}
+                                            alt={`${product.name} ${index + 1}`}
+                                        />
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Typography variant="h4" gutterBottom>

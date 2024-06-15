@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Drawer, Box, Typography, Button, IconButton, List, ListItem, ListItemText, ListItemAvatar, Avatar } from '@mui/material';
 import { Close, Remove, Add, Delete } from '@mui/icons-material';
 import { useCart } from '@/context/CartContext';
+import { useUser } from '@/context/UserContext';
 
 interface CartPopupProps {
     open: boolean;
@@ -12,6 +13,7 @@ interface CartPopupProps {
 const CartPopup: React.FC<CartPopupProps> = ({ open, onClose }) => {
     const { cartItems, removeFromCart, incrementQuantity, decrementQuantity, totalAmount } = useCart();
     const [isClient, setIsClient] = useState(false);
+    const { user } = useUser();
 
     useEffect(() => {
         setIsClient(true);
@@ -26,9 +28,14 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose }) => {
         window.location.href = '/';
     };
 
+
     const handleCheckout = () => {
         if (totalAmount() > 0) {
-            window.location.href = '/checkout';
+            if (user) {
+                window.location.href = '/checkout';
+            } else {
+                window.location.href = '/login';
+            }
         }
     };
 
@@ -46,7 +53,7 @@ const CartPopup: React.FC<CartPopupProps> = ({ open, onClose }) => {
                     {cartItems.map(item => (
                         <ListItem key={item.id} alignItems="flex-start">
                             <ListItemAvatar>
-                                <Avatar src={item.image} />
+                                <Avatar src={item.primaryImageUrl} sx={{ width: 60, height: 60 }} />
                             </ListItemAvatar>
                             <ListItemText
                                 primary={item.name}

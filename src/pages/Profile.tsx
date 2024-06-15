@@ -8,48 +8,61 @@ import { useUser } from '@/context/UserContext';
 const Profile: React.FC = () => {
     const { user, setUser } = useUser();
     const [profileDetails, setProfileDetails] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
-        street: '',
-        city: '',
-        state: '',
-        country: '',
-        telephone: '',
+        image: '',
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            country: '',
+            telphone: '',
+        },
     });
     const [avatar, setAvatar] = useState<string | ArrayBuffer | null>(null);
     const [editing, setEditing] = useState(false);
 
     useEffect(() => {
         if (user) {
-            console.log('User data:', user); 
+            console.log('User data:', user);
             setProfileDetails({
-                name: user.firstName,
-                email: user.email,
-                street: user.address?.street || '',
-                city: user.address?.city || '',
-                state: user.address?.state || '',
-                country: user.address?.country || '',
-                telephone: user.address?.telephone || '',
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                email: user.email || '',
+                image: user.image || '',
+                address: {
+                    street: user.address?.street || '',
+                    city: user.address?.city || '',
+                    state: user.address?.state || '',
+                    country: user.address?.country || '',
+                    telphone: user.address?.telphone || '',
+                },
             });
         } else {
-                window.location.href = '/login';
+            window.location.href = '/login'; // Redirect to login if user is not logged in
         }
-}, [user]);
+    }, [user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setProfileDetails(prevDetails => ({ ...prevDetails, [name]: value }));
+        setProfileDetails(prevDetails => ({
+            ...prevDetails,
+            [name]: value,
+            address: {
+                ...prevDetails.address,
+                [name]: value,
+            },
+        }));
     };
 
     const handleEditToggle = () => {
         setEditing(!editing);
     };
 
-    
-
-
     const handleSave = async () => {
         if (!user) return;
+
         try {
             const response = await fetch(`http://localhost:8000/users/${user.id}`, {
                 method: 'PUT',
@@ -90,10 +103,7 @@ const Profile: React.FC = () => {
                     <Avatar
                         src={typeof avatar === 'string' ? avatar : undefined}
                         sx={{ width: 80, height: 80, marginBottom: 2 }}
-                    >
-                        {/* {!avatar && (profileDetails.name[0] || 'JD')} */}
-                        jd
-                    </Avatar>
+                    />
                     {editing && (
                         <Box position="absolute" bottom={0} right={0}>
                             <input
@@ -124,9 +134,20 @@ const Profile: React.FC = () => {
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
-                                label="Name"
-                                name="name"
-                                value={profileDetails.name}
+                                label="First Name"
+                                name="firstName"
+                                value={profileDetails.firstName}
+                                onChange={handleChange}
+                                disabled={!editing}
+                                variant={editing ? 'outlined' : 'filled'}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                label="Last Name"
+                                name="lastName"
+                                value={profileDetails.lastName}
                                 onChange={handleChange}
                                 disabled={!editing}
                                 variant={editing ? 'outlined' : 'filled'}
@@ -146,9 +167,9 @@ const Profile: React.FC = () => {
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
-                                label="city"
+                                label="City"
                                 name="city"
-                                value={profileDetails.city}
+                                value={profileDetails.address.city}
                                 onChange={handleChange}
                                 disabled={!editing}
                                 variant={editing ? 'outlined' : 'filled'}
@@ -158,8 +179,41 @@ const Profile: React.FC = () => {
                             <TextField
                                 fullWidth
                                 label="Telephone"
-                                name="telephone"
-                                value={profileDetails.telephone}
+                                name="telphone"
+                                value={profileDetails.address.telphone}
+                                onChange={handleChange}
+                                disabled={!editing}
+                                variant={editing ? 'outlined' : 'filled'}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                label="Street"
+                                name="street"
+                                value={profileDetails.address.street}
+                                onChange={handleChange}
+                                disabled={!editing}
+                                variant={editing ? 'outlined' : 'filled'}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                label="State"
+                                name="state"
+                                value={profileDetails.address.state}
+                                onChange={handleChange}
+                                disabled={!editing}
+                                variant={editing ? 'outlined' : 'filled'}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                label="Country"
+                                name="country"
+                                value={profileDetails.address.country}
                                 onChange={handleChange}
                                 disabled={!editing}
                                 variant={editing ? 'outlined' : 'filled'}
