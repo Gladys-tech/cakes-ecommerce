@@ -199,6 +199,9 @@ const NavBar: React.FC = () => {
                 <MenuItem onClick={handleAccountMenuClose}>
                     <Link href="/profile" className="nav-link">Profile</Link>
                 </MenuItem>
+                <MenuItem onClick={handleAccountMenuClose}>
+                    <Link href="/order" className="nav-link">Orders</Link>
+                </MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
             <CartPopup open={cartOpen} onClose={handleCartClose} />

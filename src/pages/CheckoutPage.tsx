@@ -1,12 +1,15 @@
+
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, TextField, Button, Box, List, ListItem, ListItemText, Divider } from '@mui/material';
 import { useCart } from '@/context/CartContext';
+import { useUser } from '@/context/UserContext';
 import CartPopup from '@/components/CartPopup';
 import Calendar from '@/components/Calendar';
 
 const CheckoutPage: React.FC = () => {
     const { cartItems, totalAmount, clearCart } = useCart();
+    const { user } = useUser();
     const [customerDetails, setCustomerDetails] = useState({
         name: '',
         address: '',
@@ -16,19 +19,99 @@ const CheckoutPage: React.FC = () => {
     });
     const [isCartPopupOpen, setIsCartPopupOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [customerId, setCustomerId] = useState<string | null>(null); // State to store customerId
+
+    useEffect(() => {
+        if (user) {
+            setCustomerDetails({
+                name: `${user.firstName} ${user.lastName}`,
+                address: user.address ? `${user.address.street}, ${user.address.city}, ${user.address.state}, ${user.address.country}` : '',
+                email: user.email || '',
+                // email: '',
+                phone: user.address ? user.address.telphone : '',
+                paymentMethod: 'Cash on Delivery', // Default payment method
+            });
+        }
+    }, [user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setCustomerDetails(prevDetails => ({ ...prevDetails, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Here you can handle form submission, e.g., send details to the backend, process payment, etc.
-        console.log('Order submitted:', customerDetails, cartItems, selectedDate);
+    const createCustomer = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    firstName: user?.firstName || '',
+                    lastName: user?.lastName || '',
+                    email: user?.email || '',
+                    // email: customerDetails.email,
+                    location: user?.address ? `${user.address.city}, ${user.address.state}, ${user.address.country}` : '',
+                    telphone: user?.address ? user.address.telphone : '',
+                    isEmailVerified: true,
+                    cart: cartItems.map(item => ({
+                        productId: item.id,
+                        quantity: item.quantity
+                    }))
+                })
+            });
 
-        // Clear cart after successful order submission
-        clearCart();
+            const data = await response.json();
+            console.log("created customer", data);
+            setCustomerId(data.customer.id); // Store the customerId in state
+            return data.customer.id;
+        } catch (error) {
+            console.error('Error creating customer:', error);
+            throw error;
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            // Ensure customerId is available
+
+            let customerIdToUse = customerId;
+
+            if (!customerId) {
+                const createdCustomerId = await createCustomer();
+                customerIdToUse = createdCustomerId;
+            }
+
+            if (!customerIdToUse) {
+                throw new Error('Customer ID is not available');
+            }
+
+            // Proceed to place order
+            const response = await fetch('http://localhost:8000/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customer: {
+                        customerId: customerIdToUse,
+                        products: cartItems.map(item => ({
+                            productId: item.id,
+                            quantity: item.quantity
+                        }))
+                    }
+                })
+            });
+
+            const orderData = await response.json();
+            console.log('Order placed successfully:', orderData);
+            clearCart(); // Clear cart after successful order placement
+        } catch (error) {
+            console.error('Error placing order:', error);
+            // Handle error scenario (e.g., display error message to user)
+        }
     };
 
     const handleEditCartClick = () => {
@@ -94,6 +177,7 @@ const CheckoutPage: React.FC = () => {
                             onChange={handleChange}
                             required
                             margin="normal"
+                            disabled // Disable payment method editing if desired
                         />
                         <Button type="submit" variant="contained" className='global-button' sx={{ marginTop: 2 }}>
                             Place Order
@@ -127,13 +211,14 @@ const CheckoutPage: React.FC = () => {
                     </Box>
                 </Grid>
             </Grid>
-            <Typography variant="h6" gutterBottom sx={{ marginTop: 4 }}>
+            {/* <Typography variant="h6" gutterBottom sx={{ marginTop: 4 }}>
                 Choose a Delivery Date for Your Order
             </Typography>
-            <Calendar selectedDate={selectedDate} onDateChange={setSelectedDate} />
+            <Calendar selectedDate={selectedDate} onDateChange={setSelectedDate} /> */}
             <CartPopup open={isCartPopupOpen} onClose={handleCartPopupClose} />
         </Container>
     );
 };
 
 export default CheckoutPage;
+

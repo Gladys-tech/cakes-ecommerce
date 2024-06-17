@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, TextField, Button, Box, Avatar, IconButton } from '@mui/material';
@@ -39,6 +38,7 @@ const Profile: React.FC = () => {
                     telphone: user.address?.telphone || '',
                 },
             });
+            setAvatar(user.image || '');
         } else {
             window.location.href = '/login'; // Redirect to login if user is not logged in
         }
@@ -46,14 +46,20 @@ const Profile: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setProfileDetails(prevDetails => ({
-            ...prevDetails,
-            [name]: value,
-            address: {
-                ...prevDetails.address,
+        if (['street', 'city', 'state', 'country', 'telphone'].includes(name)) {
+            setProfileDetails(prevDetails => ({
+                ...prevDetails,
+                address: {
+                    ...prevDetails.address,
+                    [name]: value,
+                },
+            }));
+        } else {
+            setProfileDetails(prevDetails => ({
+                ...prevDetails,
                 [name]: value,
-            },
-        }));
+            }));
+        }
     };
 
     const handleEditToggle = () => {
@@ -64,17 +70,22 @@ const Profile: React.FC = () => {
         if (!user) return;
 
         try {
+            let updatedProfileDetails = { ...profileDetails };
+            if (typeof avatar === 'string') {
+                updatedProfileDetails.image = avatar;
+            }
+
             const response = await fetch(`http://localhost:8000/users/${user.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(profileDetails),
+                body: JSON.stringify(updatedProfileDetails),
             });
 
             if (response.ok) {
                 const updatedUser = await response.json();
-                setUser(updatedUser); // Update user context if needed
+                setUser(updatedUser.user);
                 setEditing(false);
                 console.log('Profile updated successfully:', updatedUser);
             } else {
@@ -90,7 +101,9 @@ const Profile: React.FC = () => {
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                setAvatar(reader.result);
+                if (reader.result) {
+                    setAvatar(reader.result as string);
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -101,7 +114,7 @@ const Profile: React.FC = () => {
             <Box display="flex" flexDirection="column" alignItems="center">
                 <Box position="relative">
                     <Avatar
-                        src={typeof avatar === 'string' ? avatar : undefined}
+                        src={typeof avatar === 'string' ? avatar : profileDetails.image || undefined}
                         sx={{ width: 80, height: 80, marginBottom: 2 }}
                     />
                     {editing && (
@@ -234,4 +247,5 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+
 
