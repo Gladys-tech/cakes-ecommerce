@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Typography, Box, Container, Paper, Grid, Card, CardMedia, CardContent } from '@mui/material';

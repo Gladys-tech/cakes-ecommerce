@@ -1,26 +1,30 @@
+
 "use client";
-import React, { useState, useEffect, useContext } from 'react';
-import { Container, Typography, Grid, Paper, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Paper, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Pagination } from '@mui/material';
 import { useUser } from '@/context/UserContext';
 
 const Orders: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [page, setPage] = useState(1);
+    const ordersPerPage = 6;
 
     // Access user context
-    const { user, setUser } = useUser();
+    const { user } = useUser();
+
     useEffect(() => {
         if (!user) return; // Ensure user is available
-        const userEmail = user.email; // Get user's email from context
+
+        const userId = user.id; // Get user's ID from context
 
         // Fetch orders from API
         const fetchOrders = async () => {
             try {
-                // const response = await fetch(`http://localhost:8000/orders?email=${encodeURIComponent(userEmail)}`);
-                const response = await fetch(`http://localhost:8000/orders`);
+                const response = await fetch(`http://localhost:8000/users/${userId}/orders`);
                 const data = await response.json();
-                setOrders(data.orders);
+                setOrders(data); // Assuming the API response is a list of orders
             } catch (error) {
                 console.error('Error fetching orders:', error);
             }
@@ -38,82 +42,67 @@ const Orders: React.FC = () => {
         setDialogOpen(false);
     };
 
+    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    };
+
+    const displayedOrders = orders.slice((page - 1) * ordersPerPage, page * ordersPerPage);
+
     return (
         <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
             <Typography variant="h4" gutterBottom>
-                Orders
+                My Orders
             </Typography>
-            <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                    <Typography variant="h6">
-                        Ongoing Orders ({orders.filter(order => order.status === 'order made').length})
-                    </Typography>
-                    {orders.filter(order => order.status === 'order made').map((order) => (
-                        <Paper key={order.id} sx={{ padding: 2, marginBottom: 2 }}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={4}>
-                                    <img src={order.product.primaryImageUrl} alt={order.product.name} style={{ width: '100%' }} />
-                                </Grid>
-                                <Grid item xs={8}>
-                                    <Typography variant="subtitle1">{order.product.name}</Typography>
-                                    <Typography variant="body2">{`${order.product.description.slice(0, 50)}...`}</Typography>
-                                    <Typography variant="body2">Order ID: {order.id}</Typography>
-                                    <Typography variant="body2">Quantity: {order.quantity}</Typography>
-                                    <Typography variant="body2">Status: {order.status}</Typography>
-                                    <Typography variant="body2">Created At: {new Date(order.createdAt).toLocaleDateString()}</Typography>
-                                    <Typography variant="body2">Expected Delivery: {new Date(order.expectedDeliveryDate).toLocaleDateString()}</Typography>
-                                    <Button variant="outlined" onClick={() => handleSeeDetails(order)} sx={{ marginTop: 1 }}>
-                                        See Details
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    ))}
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <Typography variant="h6">
-                        Delivered Orders ({orders.filter(order => order.status === 'delivered').length})
-                    </Typography>
-                    {orders.filter(order => order.status === 'delivered').map((order) => (
-                        <Paper key={order.id} sx={{ padding: 2, marginBottom: 2 }}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={4}>
-                                    <img src={order.product.primaryImageUrl} alt={order.product.name} style={{ width: '100%' }} />
-                                </Grid>
-                                <Grid item xs={8}>
-                                    <Typography variant="subtitle1">{order.product.name}</Typography>
-                                    <Typography variant="body2">{`${order.product.description.slice(0, 50)}...`}</Typography>
-                                    <Typography variant="body2">Order ID: {order.id}</Typography>
-                                    <Typography variant="body2">Quantity: {order.quantity}</Typography>
-                                    <Typography variant="body2">Status: {order.status}</Typography>
-                                    <Typography variant="body2">Created At: {new Date(order.createdAt).toLocaleDateString()}</Typography>
-                                    <Typography variant="body2">Expected Delivery: {new Date(order.expectedDeliveryDate).toLocaleDateString()}</Typography>
-                                    <Button variant="outlined" onClick={() => handleSeeDetails(order)} sx={{ marginTop: 1 }}>
-                                        See Details
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    ))}
-                </Grid>
-            </Grid>
+            {displayedOrders.map((order) => (
+                <Paper key={order.id} sx={{ padding: 2, marginBottom: 2 }}>
+                    <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center">
+                        <Box pr={{ xs: 0, sm: 2 }} pb={{ xs: 2, sm: 0 }} style={{ width: 120, height: 120, flexShrink: 0 }}>
+                            <img src={order.product?.primaryImageUrl} alt={order.product?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </Box>
+                        <Box flexGrow={1} pl={{ xs: 0, sm: 2 }} pr={{ xs: 0, sm: 2 }} pb={{ xs: 2, sm: 0 }}>
+                            <Typography variant="subtitle1">{order.product?.name}</Typography>
+                            <Typography variant="body2">{`${order.product?.description.slice(0, 50)}...`}</Typography>
+                            <Typography variant="body2">Order ID: {order.id}</Typography>
+                            <Typography variant="body2">Quantity: {order.quantity}</Typography>
+                            <Typography variant="body2">Status: {order.status}</Typography>
+                            <Typography variant="body2">Created At: {new Date(order.createdAt).toLocaleDateString()}</Typography>
+                            <Typography variant="body2">Expected Delivery: {new Date(order.expectedDeliveryDate).toLocaleDateString()}</Typography>
+                        </Box>
+                        <Box>
+                            <Button variant="outlined" className='global-button' onClick={() => handleSeeDetails(order)}>
+                                See Details
+                            </Button>
+                        </Box>
+                    </Box>
+                </Paper>
+            ))}
 
+            {/* Pagination controls */}
+            <Box mt={2} display="flex" justifyContent="center">
+                <Pagination
+                    count={Math.ceil(orders.length / ordersPerPage)}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                />
+            </Box>
+
+            {/* Order details dialog */}
             <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                 <DialogTitle>Order Details</DialogTitle>
                 <DialogContent>
                     {selectedOrder && (
                         <Box>
                             <Typography variant="subtitle1">Client: {selectedOrder.client}</Typography>
-                            <Typography variant="body2">Order Value: ${selectedOrder.orderValue}</Typography>
-                            <Typography variant="body2">Actual Money: ${selectedOrder.actualMoney}</Typography>
+                            <Typography variant="body2">Order Value: ush {selectedOrder.orderValue}</Typography>
+                            <Typography variant="body2">Ordered Quantity: {selectedOrder.quantity}</Typography>
                             <Typography variant="body2">Payment Method: {selectedOrder.paymentMethod}</Typography>
-                            <Typography variant="body2">Total Commission: ${selectedOrder.totalCommission}</Typography>
-                            <Typography variant="body2">Product ID: {selectedOrder.product.id}</Typography>
-                            <Typography variant="body2">Product Name: {selectedOrder.product.name}</Typography>
-                            <Typography variant="body2">Product Description: {selectedOrder.product.description}</Typography>
-                            <Typography variant="body2">Product Price: ${selectedOrder.product.price}</Typography>
-                            <Typography variant="body2">Inventory Quantity: {selectedOrder.product.inventoryQuantity}</Typography>
-                            <Typography variant="body2">Shops: {selectedOrder.shops.map((shop: any) => shop.name).join(', ')}</Typography>
+                            <Typography variant="body2">Product ID: {selectedOrder.product?.id}</Typography>
+                            <Typography variant="body2">Product Name: {selectedOrder.product?.name}</Typography>
+                            <Typography variant="body2">Product Description: {selectedOrder.product?.description}</Typography>
+                            <Typography variant="body2">Product Price: ush {selectedOrder.product?.price}</Typography>
+                            <Typography variant="body2">Product Status: {selectedOrder.product?.productStatus}</Typography>
+                            <Typography variant="body2">Ingredients: {selectedOrder.product?.ingredients}</Typography>
                         </Box>
                     )}
                 </DialogContent>

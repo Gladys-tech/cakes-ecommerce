@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
 import { Grid, Card, CardActionArea, CardContent, CardMedia, Typography, Box, Container } from '@mui/material';

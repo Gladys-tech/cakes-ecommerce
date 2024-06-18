@@ -1,9 +1,13 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Button, Card, CardMedia, CardContent, Box } from '@mui/material';
+import { Container, Typography, Grid, Button, Card, CardMedia, CardContent, Box, IconButton } from '@mui/material';
 import Link from 'next/link';
+import { Favorite, ShoppingCart } from '@mui/icons-material';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 
 interface Product {
+    image: any;
     category: string;
     id: string;
     name: string;
@@ -12,10 +16,11 @@ interface Product {
     description: string;
 }
 
-const Product: React.FC = () => {
+const ProductsPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<string[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const { addToCart } = useCart();
+    const { addToWishlist } = useWishlist();
 
     useEffect(() => {
         fetchProducts();
@@ -29,29 +34,41 @@ const Product: React.FC = () => {
             }
             const data = await response.json();
             if (data.status === 'OK' && Array.isArray(data.products)) {
-                setProducts(data.products);
-                const uniqueCategories = Array.from(new Set(data.products.map((product: Product) => product.category))) as string[];
+                // Filter out products without a category
+                const validProducts = data.products.filter((product: Product) => product.category);
+                setProducts(validProducts);
+
+                // Get unique categories with at least one product
+                const uniqueCategories = Array.from(new Set(validProducts.map((product: Product) => product.category))) as string[];
                 setCategories(uniqueCategories);
-                // Set default selected category (first category in the list)
-                setSelectedCategory(uniqueCategories[0]);
             }
         } catch (error) {
             console.error('Error fetching products:', error);
         }
     };
 
-    const handleCategoryChange = (category: string) => {
-        setSelectedCategory(category);
+    const handleAddToCart = (product: Product) => {
+        const cartItem = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            primaryImageUrl: product.primaryImageUrl,
+            quantity: 1,
+            image: product.image
+        };
+        addToCart(cartItem);
     };
 
-    // Organize products by category
-    const productsByCategory: { [key: string]: Product[] } = {};
-    products.forEach(product => {
-        if (!productsByCategory[product.category]) {
-            productsByCategory[product.category] = [];
-        }
-        productsByCategory[product.category].push(product);
-    });
+    const handleAddToWishlist = (product: Product) => {
+        const wishlistItem = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            primaryImageUrl: product.primaryImageUrl,
+            image: product.image
+        };
+        addToWishlist(wishlistItem);
+    };
 
     return (
         <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -74,35 +91,52 @@ const Product: React.FC = () => {
                     {/* Grid container for products */}
                     <Grid container spacing={2}>
                         {/* Map over products in the current category */}
-                        {productsByCategory[category]?.map((product, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={2} key={index}>
-                                {/* Product card wrapped with Link to the product details page */}
-                                <Link href={`/product-details/${product.id}`} passHref style={{ textDecoration: 'none' }}>
-                                    <Card sx={{ cursor: 'pointer' }}>
-                                        <CardMedia
-                                            component="img"
-                                            height="200"
-                                            image={product.primaryImageUrl}
-                                            alt={product.name}
-                                        />
-                                        <CardContent>
-                                            {/* Product name */}
-                                            <Typography variant="h6" gutterBottom>
-                                                {product.name}
-                                            </Typography>
-                                            {/* Product price */}
-                                            <Typography variant="body2" color="textSecondary" gutterBottom>
-                                                ${product.price}
-                                            </Typography>
-                                            {/* Truncated product description */}
-                                            <Typography variant="body2" noWrap>
-                                                {product.description}
-                                            </Typography>
-                                        </CardContent>
+                        {products
+                            .filter(product => product.category === category) // Filter products by category
+                            .map((product, index) => (
+                                <Grid item xs={12} sm={6} md={4} lg={2} key={index}>
+                                    {/* Product card wrapped with Link to the product details page */}
+                                    <Card sx={{ cursor: 'pointer', position: 'relative', height: '100%' }}>
+                                        <Link href={`/product-details/${product.id}`} passHref style={{ textDecoration: 'none' }}>
+
+                                            <CardMedia
+                                                component="img"
+                                                height="200"
+                                                image={product.primaryImageUrl}
+                                                alt={product.name}
+                                            />
+                                            <CardContent>
+                                                {/* Product name */}
+                                                <Typography variant="h6" gutterBottom>
+                                                    {product.name}
+                                                </Typography>
+                                                {/* Product price */}
+                                                <Typography variant="body2" color="textSecondary" gutterBottom>
+                                                    ${product.price}
+                                                </Typography>
+                                                {/* Truncated product description */}
+                                                <Typography variant="body2" noWrap>
+                                                    {product.description}
+                                                </Typography>
+                                            </CardContent>
+                                            {/* Favorite and Shopping Cart buttons */}
+                                            <IconButton
+                                                sx={{ position: 'absolute', top: 8, right: 8, color: "#8B4513" }}
+                                                onClick={() => handleAddToCart(product)}
+                                            >
+                                                <ShoppingCart />
+                                            </IconButton>
+                                            <IconButton
+                                                sx={{ position: 'absolute', top: 40, right: 8, color: "#f50057" }}
+                                                onClick={() => handleAddToWishlist(product)}
+                                            >
+                                                <Favorite />
+                                            </IconButton>
+
+                                        </Link>
                                     </Card>
-                                </Link>
-                            </Grid>
-                        ))}
+                                </Grid>
+                            ))}
                     </Grid>
                 </div>
             ))}
@@ -110,4 +144,4 @@ const Product: React.FC = () => {
     );
 };
 
-export default Product;
+export default ProductsPage;

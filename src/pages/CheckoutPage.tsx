@@ -7,6 +7,7 @@ import { useUser } from '@/context/UserContext';
 import CartPopup from '@/components/CartPopup';
 import Calendar from '@/components/Calendar';
 
+
 const CheckoutPage: React.FC = () => {
     const { cartItems, totalAmount, clearCart } = useCart();
     const { user } = useUser();
@@ -20,9 +21,11 @@ const CheckoutPage: React.FC = () => {
     const [isCartPopupOpen, setIsCartPopupOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [customerId, setCustomerId] = useState<string | null>(null); // State to store customerId
+   
 
     useEffect(() => {
         if (user) {
+            console.log("User context:", user); // Add this line
             setCustomerDetails({
                 name: `${user.firstName} ${user.lastName}`,
                 address: user.address ? `${user.address.street}, ${user.address.city}, ${user.address.state}, ${user.address.country}` : '',
@@ -41,6 +44,7 @@ const CheckoutPage: React.FC = () => {
 
     const createCustomer = async () => {
         try {
+            console.log("Creating customer with user ID:", user?.id);
             const response = await fetch('http://localhost:8000/customers', {
                 method: 'POST',
                 headers: {
@@ -57,7 +61,8 @@ const CheckoutPage: React.FC = () => {
                     cart: cartItems.map(item => ({
                         productId: item.id,
                         quantity: item.quantity
-                    }))
+                    })),
+                    userId: user?.id // Add userId to the payload
                 })
             });
 
@@ -108,6 +113,8 @@ const CheckoutPage: React.FC = () => {
             const orderData = await response.json();
             console.log('Order placed successfully:', orderData);
             clearCart(); // Clear cart after successful order placement
+             // Redirect to the Orders page
+             window.location.href = '/order';
         } catch (error) {
             console.error('Error placing order:', error);
             // Handle error scenario (e.g., display error message to user)

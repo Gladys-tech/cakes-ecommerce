@@ -5,19 +5,24 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import Link from 'next/link';
 import './NavBar.css';
 import { useCart } from '@/context/CartContext';
 import CartPopup from './CartPopup';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
+import { useWishlist } from '@/context/WishlistContext';
+import WishlistPopup from './WishlistPopup';
 
 const NavBar: React.FC = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [accountMenuAnchorEl, setAccountMenuAnchorEl] = useState<null | HTMLElement>(null);
+    const [wishlistOpen, setWishlistOpen] = useState(false);
     const { cartItems } = useCart();
     const [cartOpen, setCartOpen] = useState(false); // State for cart visibility
     const { user, setUser } = useUser();
+    const { wishlistItems } = useWishlist();
 
 
     const pathname = usePathname(); // Get current pathname
@@ -46,6 +51,14 @@ const NavBar: React.FC = () => {
         localStorage.removeItem('user');
         handleAccountMenuClose();
         window.location.href = '/login'; // Redirect to login or home page after logout
+    };
+
+    const handleWishlistOpen = () => {
+        setWishlistOpen(true);
+    };
+
+    const handleWishlistClose = () => {
+        setWishlistOpen(false);
     };
 
     const drawer = (
@@ -181,6 +194,29 @@ const NavBar: React.FC = () => {
                                 </Box>
                             )}
                         </IconButton>
+                        <IconButton
+                            color="inherit"
+                            onClick={handleWishlistOpen} // New: Open Wishlist
+                        >
+                            <FavoriteIcon />
+                            {wishlistItems.length > 0 && (
+                                <Box
+                                    component="span"
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        bgcolor: '#ff0000',
+                                        borderRadius: '50%',
+                                        padding: '2px 5px',
+                                        color: 'white',
+                                        fontSize: 10,
+                                    }}
+                                >
+                                    {wishlistItems.length}
+                                </Box>
+                            )}
+                        </IconButton>
                     </Box>
                 </Toolbar>
             </AppBar>
@@ -205,6 +241,7 @@ const NavBar: React.FC = () => {
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
             <CartPopup open={cartOpen} onClose={handleCartClose} />
+            <WishlistPopup open={wishlistOpen} onClose={handleWishlistClose} />
         </>
     );
 };
