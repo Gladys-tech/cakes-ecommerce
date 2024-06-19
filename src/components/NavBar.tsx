@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Box, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Box, Menu, MenuItem, InputBase } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -14,6 +14,7 @@ import { usePathname } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { useWishlist } from '@/context/WishlistContext';
 import WishlistPopup from './WishlistPopup';
+import { useSearch } from '@/context/SearchContext';
 
 const NavBar: React.FC = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -23,6 +24,8 @@ const NavBar: React.FC = () => {
     const [cartOpen, setCartOpen] = useState(false); // State for cart visibility
     const { user, setUser } = useUser();
     const { wishlistItems } = useWishlist();
+    const { searchQuery, setSearchQuery } = useSearch(); // Use search context
+    const [searchOpen, setSearchOpen] = useState(false);
 
 
     const pathname = usePathname(); // Get current pathname
@@ -61,6 +64,22 @@ const NavBar: React.FC = () => {
         setWishlistOpen(false);
     };
 
+    const handleSearchIconClick = () => {
+        // setSearchOpen((prev) => !prev);
+        setSearchOpen(!searchOpen); // Toggle search form visibility
+    };
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+        console.log("Updated search query:", event.target.value);
+    };
+
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        console.log("Search query:", searchQuery);
+        setSearchOpen(false);
+    };
+
     const drawer = (
         <Box
             sx={{ width: 250 }}
@@ -70,20 +89,14 @@ const NavBar: React.FC = () => {
         >
             <List>
                 {['About', 'Product', 'Contact', 'Signup', 'Blog'].map((text, index) => (
-                    <ListItem button onClick={toggleDrawer(false)} key={index}>
-                        <Link href={`/${text.toLowerCase()}`} passHref>
-                            <ListItemText primary={text} />
+                    <ListItem button onClick={toggleDrawer(false)} key={index} >
+                        <Link href={`/${text.toLowerCase()}`} passHref     style= {{ textDecoration: 'none', color: 'inherit' }}>
+                            <ListItemText primary={text}
+                             />
                         </Link>
                     </ListItem>
                 ))}
-                <ListItem button>
-                    <SearchIcon />
-                    <ListItemText primary="Search" />
-                </ListItem>
-                {/* <ListItem button onClick={handleAccountMenuOpen}>
-                    <AccountCircleIcon />
-                    <ListItemText primary="Account" />
-                </ListItem> */}
+
                 <ListItem button onClick={handleAccountMenuOpen}>
                     {user ? (
                         <>
@@ -94,6 +107,7 @@ const NavBar: React.FC = () => {
                         <ListItemText primary="Guest" />
                     )}
                 </ListItem>
+
             </List>
         </Box>
     );
@@ -155,12 +169,29 @@ const NavBar: React.FC = () => {
                         </Link>
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <IconButton
-                            color="inherit"
-                            sx={{ display: { xs: 'none', md: 'block' } }}
-                        >
-                            <SearchIcon />
-                        </IconButton>
+
+                        {searchOpen ? (
+                            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
+                                <InputBase
+                                    placeholder="Search…"
+                                    value={searchQuery}
+                                    onChange={handleSearchChange}
+                                    sx={{ color: 'inherit', marginRight: 1 }}
+                                    autoFocus
+                                />
+                                <IconButton type="submit" color="inherit">
+                                    <SearchIcon />
+                                </IconButton>
+                            </form>
+                        ) : (
+                            <IconButton
+                                color="inherit"
+                                sx={{ display: { xs: 'block', md: 'none' } }}
+                                onClick={handleSearchIconClick}
+                            >
+                                <SearchIcon />
+                            </IconButton>
+                        )}
 
                         {user && (
                             <IconButton

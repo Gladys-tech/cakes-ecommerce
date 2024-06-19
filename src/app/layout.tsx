@@ -7,6 +7,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { CartProvider } from "@/context/CartContext";
 import { UserProvider } from "@/context/UserContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { SearchProvider } from "@/context/SearchContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,15 +26,17 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
   return (
     <UserProvider>
       <CartProvider>
-      <WishlistProvider>
-        <html lang="en">
-          <body className={inter.className}>
-            <NavBar />
-            {children}
-            <Footer />
-            <ScrollToTop />
-          </body>
-        </html>
+        <WishlistProvider>
+          <SearchProvider>
+            <html lang="en">
+              <body className={inter.className}>
+                <NavBar />
+                {children}
+                <Footer />
+                <ScrollToTop />
+              </body>
+            </html>
+          </SearchProvider>
         </WishlistProvider>
       </CartProvider>
     </UserProvider>

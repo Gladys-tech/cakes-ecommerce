@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Container, Typography, Grid, Button, Card, CardMedia, Box, IconButton } from '@mui/material';
 import { Add, Remove, ExpandMore, Close } from '@mui/icons-material';
 import CartPopup from '@/components/CartPopup';
 import { useRouter } from 'next/router';
+import ScrollToTop from './ScrollToTop';
 
 interface Product {
     id: string;
@@ -25,10 +26,10 @@ const ProductDetailsPage: React.FC = () => {
     const [quantity, setQuantity] = useState(1);
     const [showIngredients, setShowIngredients] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]); // State for related products
 
     const router = useRouter();
     const { id } = router.query;
-
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -42,6 +43,13 @@ const ProductDetailsPage: React.FC = () => {
                     console.log('product data got', data);
                     if (data.status === "OK" && data.product) {
                         setProduct(data.product);
+                        // Fetch related products from the same category
+                        const relatedResponse = await fetch(`http://localhost:8000/products?category=${data.product.category}&limit=4`);
+                        if (!relatedResponse.ok) {
+                            throw new Error('Failed to fetch related products');
+                        }
+                        const relatedData = await relatedResponse.json();
+                        setRelatedProducts(relatedData.products.filter((p: Product) => p.id !== data.product.id && p.category === data.product.category));
                     } else {
                         throw new Error('Product not found');
                     }
@@ -103,7 +111,7 @@ const ProductDetailsPage: React.FC = () => {
     };
 
     const handleClose = () => {
-        router.push(`/categoryProducts?category=${product.category}`); 
+        router.push(`/categoryProducts?category=${product.category}`);
     };
 
     return (
@@ -112,7 +120,7 @@ const ProductDetailsPage: React.FC = () => {
                 <Box sx={{ position: 'relative' }}>
                     <IconButton
                         onClick={handleClose}
-                        sx={{ position: 'absolute', top: 0, right: 0 ,  color: '#8B4513'}}
+                        sx={{ position: 'absolute', top: 0, right: 0, color: '#8B4513' }}
                     >
                         <Close />
                     </IconButton>
@@ -190,9 +198,51 @@ const ProductDetailsPage: React.FC = () => {
                     </Grid>
                 </Grid>
             </Container>
+
+            {/* Display related products */}
+            {relatedProducts.length > 0 && (
+                <>
+                    <Typography variant="h5" sx={{ marginTop: 4 }}>Related Products</Typography>
+                    <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                        {relatedProducts.map((relatedProduct: Product) => (
+                            <Grid item xs={6} md={3} key={relatedProduct.id}>
+                                <Card>
+                                    <CardMedia
+                                        component="img"
+                                        height="200"
+                                        image={relatedProduct.primaryImageUrl}
+                                        alt={relatedProduct.name}
+                                    />
+                                    <Box sx={{ p: 2 }}>
+                                        <Typography variant="subtitle1" gutterBottom>
+                                            {relatedProduct.name}
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            ${relatedProduct.price}
+                                        </Typography>
+                                        <Button
+                                            variant="contained"
+                                            className='global-button'
+                                            onClick={() => router.push(`/product-details/${relatedProduct.id}`)}
+                                            sx={{ marginTop: 2 }}
+                                        >
+                                            View Details
+                                        </Button>
+                                    </Box>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </>
+            )}
+
+             {/* ScrollToTop component */}
+             <ScrollToTop />
+
             <CartPopup open={cartOpen} onClose={() => setCartOpen(false)} />
         </>
     );
 };
 
 export default ProductDetailsPage;
+

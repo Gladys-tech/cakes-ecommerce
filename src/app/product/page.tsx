@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Favorite, ShoppingCart } from '@mui/icons-material';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useSearch } from '@/context/SearchContext';
 
 interface Product {
     image: any;
@@ -21,10 +22,15 @@ const ProductsPage: React.FC = () => {
     const [categories, setCategories] = useState<string[]>([]);
     const { addToCart } = useCart();
     const { addToWishlist } = useWishlist();
+    const { searchQuery } = useSearch(); // Use search context
 
     useEffect(() => {
         fetchProducts();
     }, []);
+
+    useEffect(() => {
+        console.log("Filtered products:", filteredProducts);
+    }, [searchQuery, products]);
 
     const fetchProducts = async () => {
         try {
@@ -70,6 +76,11 @@ const ProductsPage: React.FC = () => {
         addToWishlist(wishlistItem);
     };
 
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
             {/* Back to Categories button */}
@@ -91,7 +102,13 @@ const ProductsPage: React.FC = () => {
                     {/* Grid container for products */}
                     <Grid container spacing={2}>
                         {/* Map over products in the current category */}
-                        {products
+                        {/* {products */}
+                        {filteredProducts.length === 0 && (
+                            <Typography variant="body1" color="textSecondary" align="center" sx={{ marginBottom: 2 }}>
+                                No products match your search.
+                            </Typography>
+                        )}
+                        {filteredProducts
                             .filter(product => product.category === category) // Filter products by category
                             .map((product, index) => (
                                 <Grid item xs={12} sm={6} md={4} lg={2} key={index}>
