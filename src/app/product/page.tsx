@@ -6,6 +6,7 @@ import { Favorite, ShoppingCart } from '@mui/icons-material';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useSearch } from '@/context/SearchContext';
+import { usePathname } from 'next/navigation';
 
 interface Product {
     image: any;
@@ -18,6 +19,7 @@ interface Product {
 }
 
 const ProductsPage: React.FC = () => {
+    const pathname = usePathname();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<string[]>([]);
     const { addToCart } = useCart();
@@ -83,6 +85,9 @@ const ProductsPage: React.FC = () => {
 
     return (
         <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
+            <Typography variant="body2" align="center" gutterBottom style={{ fontSize: '1.5rem' }}>
+                Current path:<span style={{ color: '#8B4513', fontSize: '1.5rem' }}>Home {pathname}</span>
+            </Typography>
             {/* Back to Categories button */}
             <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
                 <Link href="/" passHref>

@@ -2,6 +2,12 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Typography, Box, Container, Paper, Grid, Card, CardMedia, CardContent } from '@mui/material';
+import { SearchProvider } from '@/context/SearchContext';
+import { UserProvider } from '@/context/UserContext';
+import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 
 interface Post {
     id: number;
@@ -12,8 +18,8 @@ interface Post {
 }
 
 const posts: Post[] = [
-    { id: 1, title: 'Delicious Chocolate Cake', image: '/chocolate-cake.jpg', description: 'A rich and moist chocolate cake perfect for any occasion.', content: 'This chocolate cake is made with the finest ingredients and topped with a luscious chocolate ganache.' },
-    { id: 2, title: 'Classic Vanilla Cupcakes', image: '/vanilla-cupcakes.jpg', description: 'Fluffy vanilla cupcakes topped with creamy frosting.', content: 'These vanilla cupcakes are light, fluffy, and topped with a rich, creamy vanilla frosting.' }
+    { id: 1, title: 'Delicious Chocolate Cake', image: 'images/cake24.png', description: 'A rich and moist chocolate cake perfect for any occasion.', content: 'This chocolate cake is made with the finest ingredients and topped with a luscious chocolate ganache.' },
+    { id: 2, title: 'Classic Vanilla Cupcakes', image: 'images/cake22.png', description: 'Fluffy vanilla cupcakes topped with creamy frosting.', content: 'These vanilla cupcakes are light, fluffy, and topped with a rich, creamy vanilla frosting.' }
 ];
 
 const relatedBlogs: Post[] = [
@@ -31,53 +37,65 @@ const Post: React.FC = () => {
     }
 
     return (
-        <>
-            <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
-                <Paper elevation={2} sx={{ padding: 4 }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        {post.title}
-                    </Typography>
-                    <Box mb={2}>
-                        <img src={post.image} alt={post.title} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '8px' }} />
-                    </Box>
-                    <Typography variant="body1" component="p" sx={{ marginBottom: 2 }}>
-                        {post.content}
-                    </Typography>
-                    {/* Likes and Comments */}
-                    <Box mt={4}>
-                        <Typography variant="h5" component="h2" gutterBottom>
-                            Likes and Comments
-                        </Typography>
-                    </Box>
-                </Paper>
+        <UserProvider>
+            <CartProvider>
+                <WishlistProvider>
+                    <SearchProvider>
+                        <>
+                            <NavBar />
+                            <>
+                                <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
+                                    <Paper elevation={2} sx={{ padding: 4 }}>
+                                        <Typography variant="h4" component="h1" gutterBottom>
+                                            {post.title}
+                                        </Typography>
+                                        <Box mb={2}>
+                                        <img src={post.image} alt={post.title} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '8px' }} />
+                                        </Box>
+                                        <Typography variant="body1" component="p" sx={{ marginBottom: 2 }}>
+                                            {post.content}
+                                        </Typography>
+                                        {/* Likes and Comments */}
+                                        <Box mt={4}>
+                                            <Typography variant="h5" component="h2" gutterBottom>
+                                                Likes and Comments
+                                            </Typography>
+                                        </Box>
+                                    </Paper>
 
-            </Container>
-            {/* Related Blogs */}
-            <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
-                <Typography variant="h5" component="h2" gutterBottom>
-                    Related Blogs
-                </Typography>
-                <Grid container spacing={2}>
-                    {relatedBlogs.map((blog) => (
-                        <Grid item xs={6} sm={3} key={blog.id}>
-                            <Card>
-                                <CardMedia
-                                    component="img"
-                                    image={blog.image}
-                                    alt={blog.title}
-                                    style={{ height: 140 }}
-                                />
-                                <CardContent>
-                                    <Typography variant="subtitle1" component="h3">
-                                        {blog.title}
+                                </Container>
+                                {/* Related Blogs */}
+                                <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
+                                    <Typography variant="h5" component="h2" gutterBottom>
+                                        Related Blogs
                                     </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Container>
-        </>
+                                    <Grid container spacing={2}>
+                                        {relatedBlogs.map((blog) => (
+                                            <Grid item xs={6} sm={3} key={blog.id}>
+                                                <Card>
+                                                    <CardMedia
+                                                        component="img"
+                                                        image={blog.image}
+                                                        alt={blog.title}
+                                                        style={{ height: 140 }}
+                                                    />
+                                                    <CardContent>
+                                                        <Typography variant="subtitle1" component="h3">
+                                                            {blog.title}
+                                                        </Typography>
+                                                    </CardContent>
+                                                </Card>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Container>
+                            </>
+                            <Footer />
+                        </>
+                    </SearchProvider>
+                </WishlistProvider>
+            </CartProvider>
+        </UserProvider>
     );
 };
 

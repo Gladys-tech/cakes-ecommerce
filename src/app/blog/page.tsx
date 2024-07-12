@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Grid, Card, CardActionArea, CardContent, CardMedia, Typography, Box, Container } from '@mui/material';
+import { usePathname } from 'next/navigation';
 
 interface Post {
     id: number;
@@ -11,11 +12,12 @@ interface Post {
 }
 
 const posts: Post[] = [
-    { id: 1, title: 'Delicious Chocolate Cake', image: '/chocolate-cake.jpg', description: 'A rich and moist chocolate cake perfect for any occasion.' },
-    { id: 2, title: 'Classic Vanilla Cupcakes', image: '/vanilla-cupcakes.jpg', description: 'Fluffy vanilla cupcakes topped with creamy frosting.' }
+    { id: 1, title: 'Delicious Chocolate Cake', image: 'images/cake24.png', description: 'A rich and moist chocolate cake perfect for any occasion.' },
+    { id: 2, title: 'Classic Vanilla Cupcakes', image: 'images/cake22.png', description: 'Fluffy vanilla cupcakes topped with creamy frosting.' }
 ];
 
 const Blog: React.FC = () => {
+    const pathname = usePathname();
     return (
         <>
             <Box
@@ -24,6 +26,9 @@ const Blog: React.FC = () => {
                 <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
                     <Typography variant="h4" gutterBottom align="center">
                         Our Blogs
+                    </Typography>
+                    <Typography variant="body2" align="center" gutterBottom style={{ fontSize: '1.5rem' }}>
+                        Current path:<span style={{ color: '#8B4513', fontSize: '1.5rem' }}>Home {pathname}</span>
                     </Typography>
                     <Grid container spacing={3}>
                         {posts.map((post) => (

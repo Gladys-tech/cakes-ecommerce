@@ -2,6 +2,7 @@
 import React from 'react';
 import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Button } from '@mui/material';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const teamMembers = [
     {
@@ -25,10 +26,14 @@ const teamMembers = [
 ];
 
 const AboutUsPage: React.FC = () => {
+    const pathname = usePathname();
     return (
         <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
             <Typography variant="h4" gutterBottom align="center">
                 About Us
+            </Typography>
+            <Typography variant="body2" align="center" gutterBottom style={{ fontSize: '1.5rem' }}>
+                Current path:<span style={{ color: '#8B4513', fontSize: '1.5rem' }}>Home {pathname}</span>
             </Typography>
             <Typography variant="body1" paragraph align="center">
                 Welcome to gCakes! We are passionate about baking the most delicious and beautiful cakes for every occasion.

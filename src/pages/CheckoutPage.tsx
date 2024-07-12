@@ -6,9 +6,11 @@ import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import CartPopup from '@/components/CartPopup';
 import Calendar from '@/components/Calendar';
+import { usePathname } from 'next/navigation';
 
 
 const CheckoutPage: React.FC = () => {
+    const pathname = usePathname();
     const { cartItems, totalAmount, clearCart } = useCart();
     const { user } = useUser();
     const [customerDetails, setCustomerDetails] = useState({
@@ -21,7 +23,7 @@ const CheckoutPage: React.FC = () => {
     const [isCartPopupOpen, setIsCartPopupOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [customerId, setCustomerId] = useState<string | null>(null); // State to store customerId
-   
+
 
     useEffect(() => {
         if (user) {
@@ -113,8 +115,8 @@ const CheckoutPage: React.FC = () => {
             const orderData = await response.json();
             console.log('Order placed successfully:', orderData);
             clearCart(); // Clear cart after successful order placement
-             // Redirect to the Orders page
-             window.location.href = '/order';
+            // Redirect to the Orders page
+            window.location.href = '/order';
         } catch (error) {
             console.error('Error placing order:', error);
             // Handle error scenario (e.g., display error message to user)
@@ -133,6 +135,9 @@ const CheckoutPage: React.FC = () => {
         <Container maxWidth="md" sx={{ paddingTop: 4, paddingBottom: 4 }}>
             <Typography variant="h4" gutterBottom>
                 Checkout
+            </Typography>
+            <Typography variant="body2" align="center" gutterBottom style={{ fontSize: '1.5rem' }}>
+                Current path:<span style={{ color: '#8B4513', fontSize: '1.5rem' }}>Home {pathname}</span>
             </Typography>
             <Grid container spacing={4}>
                 <Grid item xs={12} md={6}>

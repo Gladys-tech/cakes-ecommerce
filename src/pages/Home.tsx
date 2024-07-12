@@ -7,9 +7,10 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import Link from 'next/link';
 
 const images = [
-  '/images/cake21.png', 
+  '/images/cake21.png',
   '/images/cake22.png',
   '/images/cake23.png'
 ];
@@ -75,13 +76,13 @@ const Home: React.FC = () => {
           color: '#050e3c',
           padding: 4,
           maxWidth: '350px',
-          maxHeight: '500px', 
+          maxHeight: '500px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           marginLeft: isSmallScreen ? 2 : 4,
-          borderRadius: slideBorderRadius[currentSlide], 
+          borderRadius: slideBorderRadius[currentSlide],
           boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)', // Box shadow
           zIndex: 1 // Ensure box is above slider
         }}
@@ -92,9 +93,11 @@ const Home: React.FC = () => {
         <Typography variant="body1" paragraph>
           {slideContent[currentSlide].description}
         </Typography>
-        <Button variant="contained" className="global-button">
-          {slideContent[currentSlide].buttonText}
-        </Button>
+        <Link href="/product" passHref>
+          <Button variant="contained" className="global-button">
+            {slideContent[currentSlide].buttonText}
+          </Button>
+        </Link>
         <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
           <NavigateBeforeIcon
             sx={{ cursor: 'pointer', marginRight: 1, color: 'white' }}
@@ -107,7 +110,7 @@ const Home: React.FC = () => {
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                backgroundColor: currentSlide === index ? 'rgba(139, 69, 19, 1)' : 'white', 
+                backgroundColor: currentSlide === index ? 'rgba(139, 69, 19, 1)' : 'white',
                 marginRight: 1,
                 cursor: 'pointer'
               }}

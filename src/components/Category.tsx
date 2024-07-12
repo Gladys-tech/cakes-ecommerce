@@ -65,7 +65,9 @@ const Category: React.FC = () => {
                 {categories.map((category, index) => (
                     <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
                         <Link href={category.link} passHref style={{ textDecoration: 'none' }}>
+                            {/* <Card sx={{ cursor: 'pointer', transition: 'transform 0.3s', '&:hover': { transform: 'scale(1.05)' } }}> */}
                             <Card sx={{ cursor: 'pointer', transition: 'transform 0.3s', '&:hover': { transform: 'scale(1.05)' } }}>
+
                                 <CardMedia
                                     component="img"
                                     height="200"

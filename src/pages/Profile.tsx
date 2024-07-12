@@ -1,10 +1,13 @@
+
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, TextField, Button, Box, Avatar, IconButton } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { useUser } from '@/context/UserContext';
+import { usePathname } from 'next/navigation';
 
 const Profile: React.FC = () => {
+    const pathname = usePathname();
     const { user, setUser } = useUser();
     const [profileDetails, setProfileDetails] = useState({
         firstName: '',
@@ -71,9 +74,11 @@ const Profile: React.FC = () => {
 
         try {
             let updatedProfileDetails = { ...profileDetails };
-            if (typeof avatar === 'string') {
-                updatedProfileDetails.image = avatar;
-            }
+            console.log('Profile updates:', updatedProfileDetails);
+
+            // if (typeof avatar === 'string') {
+            //     updatedProfileDetails.image = avatar;
+            // }
 
             const response = await fetch(`http://localhost:8000/users/${user.id}`, {
                 method: 'PUT',
@@ -109,14 +114,23 @@ const Profile: React.FC = () => {
         }
     };
 
+    const getInitials = (firstName: string, lastName: string) => {
+        const firstInitial = firstName ? firstName[0].toUpperCase() : '';
+        const lastInitial = lastName ? lastName[0].toUpperCase() : '';
+        return firstInitial + lastInitial;
+    };
+
     return (
         <Container maxWidth="sm" sx={{ paddingTop: 4, marginBottom: 5 }}>
             <Box display="flex" flexDirection="column" alignItems="center">
                 <Box position="relative">
                     <Avatar
-                        src={typeof avatar === 'string' ? avatar : profileDetails.image || undefined}
+                        alt="Avatar"
+                        src={typeof avatar === 'string' ? avatar : ''}
                         sx={{ width: 80, height: 80, marginBottom: 2 }}
-                    />
+                    >
+                        {(!avatar || typeof avatar !== 'string') && getInitials(profileDetails.firstName, profileDetails.lastName)}
+                    </Avatar>
                     {editing && (
                         <Box position="absolute" bottom={0} right={0}>
                             <input
@@ -136,6 +150,9 @@ const Profile: React.FC = () => {
                 </Box>
                 <Typography variant="h4" gutterBottom>
                     Profile
+                </Typography>
+                <Typography variant="body2" align="center" gutterBottom style={{ fontSize: '1.5rem' }}>
+                    Current path:<span style={{ color: '#8B4513', fontSize: '1.5rem' }}>Home {pathname}</span>
                 </Typography>
                 <Box sx={{ width: '100%', textAlign: 'center' }}>
                     <Button variant="contained" className='global-button' onClick={handleEditToggle}>
@@ -247,5 +264,4 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
 

@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Pagination } from '@mui/material';
 import { useUser } from '@/context/UserContext';
+import { usePathname } from 'next/navigation';
 
 const Orders: React.FC = () => {
+    const pathname = usePathname();
     const [orders, setOrders] = useState<any[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,6 +54,9 @@ const Orders: React.FC = () => {
         <Container maxWidth="lg" sx={{ paddingTop: 4, paddingBottom: 4 }}>
             <Typography variant="h4" gutterBottom>
                 My Orders
+            </Typography>
+            <Typography variant="body2" align="center" gutterBottom style={{fontSize: '1.5rem' }}>
+                Current path:<span style={{ color: '#8B4513', fontSize: '1.5rem' }}>Home {pathname}</span>
             </Typography>
             {displayedOrders.map((order) => (
                 <Paper key={order.id} sx={{ padding: 2, marginBottom: 2 }}>
